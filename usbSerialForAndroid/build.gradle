@@ -43,6 +43,21 @@ dependencies {
 
 // gradle task: publishToMavenLocal
 project.afterEvaluate {
+    // Function to check if current commit is tagged
+    def isTaggedCommit = { ->
+        try {
+            def result = 'git describe --exact-match --tags HEAD'.execute()
+            result.waitFor()
+            return result.exitValue() == 0
+        } catch (Exception e) {
+            return false
+        }
+    }
+
+    // Base version
+    def baseVersion = '3.9.1beta'
+    def finalVersion = isTaggedCommit() ? baseVersion : "${baseVersion}-SNAPSHOT"
+
     publishing {
         publications {
             release(MavenPublication) {
@@ -51,7 +66,17 @@ project.afterEvaluate {
                 // values used for local maven repo, jitpack uses github release:
                 groupId 'com.github.mik3y'
                 artifactId 'usb-serial-for-android'
-                version '3.9.1beta'
+                version finalVersion
+            }
+        }
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/dmitrijsm1/usb-serial-for-android")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
             }
         }
     }
