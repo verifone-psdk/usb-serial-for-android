@@ -176,7 +176,8 @@ public class CdcAcmSerialDriver implements UsbSerialDriver {
                 for (int i = 0; i < mDevice.getInterfaceCount(); i++) {
                     UsbInterface usbInterface = mDevice.getInterface(i);
                     if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_COMM &&
-                            usbInterface.getInterfaceSubclass() == USB_SUBCLASS_ACM) {
+                            usbInterface.getInterfaceSubclass() == USB_SUBCLASS_ACM &&
+                            usbInterface.getEndpointCount() > 0) { // Skip stub interfaces (no endpoints)
                         if (controlInterfaceCount == mPortNumber) {
                             mControlIndex = usbInterface.getId();
                             mControlInterface = usbInterface;
